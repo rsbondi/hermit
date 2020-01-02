@@ -142,6 +142,7 @@ def toggle_testnet():
 
     """
     state.Testnet = not state.Testnet
+    state.Wallet.testnet = state.Testnet
 
 
 @wallet_command('help')

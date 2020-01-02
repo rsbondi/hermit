@@ -45,7 +45,7 @@ class TestBIP32Sequence(object):
         bip32_path = "m123/123'/123/43"
         with pytest.raises(hermit.errors.HermitError) as e_info4:
             hermit.wallet.bip32_sequence(bip32_path)
-            
+
         bip32_path = "m/123'/12''/12/123"
         with pytest.raises(hermit.errors.HermitError) as e_info5:
             hermit.wallet.bip32_sequence(bip32_path)
@@ -60,7 +60,7 @@ class TestBIP32Sequence(object):
         assert str(e_info3.value) == expected
         assert str(e_info4.value) == expected
         assert str(e_info5.value) == expected
-        assert str(e_info6.value) == expected        
+        assert str(e_info6.value) == expected
 
 
 class TestHDWalletInit(object):
@@ -131,12 +131,12 @@ class TestHDWalletUnlock(object):
                                    + "abandon yellow")
         with pytest.raises(hermit.errors.HermitError) as e_info3:
             wallet.unlock()
-            
+
         expected = "Wallet words failed checksum."
         assert str(e_info1.value) == expected
         assert str(e_info2.value) == expected
-        assert str(e_info3.value) == expected        
-        
+        assert str(e_info3.value) == expected
+
 
 class TestHDWalletExtendedPublicKey(object):
 
@@ -149,6 +149,18 @@ class TestHDWalletExtendedPublicKey(object):
                     xpub = wallet.extended_public_key(path)
                     expected_xpub = bip32_vectors[seed][path]['xpub']
                     assert xpub == expected_xpub
+
+
+    def test_bip32_vectors_testnet(self, bip32_vectors):
+        for seed in bip32_vectors:
+            wallet = HDWallet()
+            wallet.root_priv = bip32_vectors[seed]['m']['xprv']
+            wallet.testnet = True
+            for path in bip32_vectors[seed]:
+                if path != "m":
+                    tpub = wallet.extended_public_key(path)
+                    expected_tpub = bip32_vectors[seed][path]['tpub']
+                    assert tpub == expected_tpub
 
 
 class TestHDWalletPublicKey(object):
@@ -175,3 +187,15 @@ class TestHDWalletExtendedPrivateKey(object):
                     xprv = wallet.extended_private_key(path)
                     expected_xprv = bip32_vectors[seed][path]['xprv']
                     assert xprv == expected_xprv
+
+    def test_bip32_vectors_testnet(self, bip32_vectors):
+        for seed in bip32_vectors:
+            wallet = HDWallet()
+            wallet.root_priv = bip32_vectors[seed]['m']['xprv']
+            wallet.testnet = True
+            for path in bip32_vectors[seed]:
+                if path != "m":
+                    tprv = wallet.extended_private_key(path)
+                    expected_tprv = bip32_vectors[seed][path]['tprv']
+                    assert tprv == expected_tprv
+

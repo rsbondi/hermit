@@ -6,7 +6,9 @@ from pybitcointools import (bip32_ckd,
                             bip32_privtopub,
                             bip32_master_key,
                             bip32_deserialize,
-                            bip32_extract_key)
+                            bip32_extract_key,
+                            bip32_serialize,
+                            TESTNET_PRIVATE)
 
 from hermit import shards
 from hermit.errors import HermitError
@@ -62,6 +64,7 @@ class HDWallet(object):
         self.root_priv = None
         self.shards = shards.ShardSet()
         self.language = "english"
+        self.testnet = False
 
     def unlocked(self) -> bool:
         return self.root_priv is not None
@@ -83,6 +86,12 @@ class HDWallet(object):
     def lock(self) -> None:
         self.root_priv = None
 
+    def private_key_testnet(self, xprv: str) -> str:
+        vbytes, depth, fingerprint, i, chaincode, key = bip32_deserialize(xprv)
+        newvbytes = TESTNET_PRIVATE
+        raw_xpriv = (newvbytes, depth, fingerprint, i, chaincode, key)
+        return bip32_serialize(raw_xpriv)
+
     def extended_public_key(self, bip32_path: str) -> str:
         self.unlock()
         xprv = self.extended_private_key(bip32_path)
@@ -95,6 +104,8 @@ class HDWallet(object):
     def extended_private_key(self, bip32_path: str) -> str:
         self.unlock()
         xprv = self.root_priv
+        if self.testnet:
+            xprv = self.private_key_testnet(xprv)
         for child_id in bip32_sequence(bip32_path):
             xprv = bip32_ckd(xprv, child_id)
         return str(xprv)
